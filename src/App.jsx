@@ -7,6 +7,9 @@ function App() {
   const [walletAddress, setWalletAddress] = useState(null);
   const [balance, setBalance] = useState("0.0");
   const [status, setStatus] = useState("");
+  const [gifUrl, setGifUrl] = useState(null);
+
+  const GIPHY_API_KEY = "RbykIbkMPvnfWdnaJWrXTt8gfl9X09pd"; 
 
   const connectWallet = async () => {
     try {
@@ -30,6 +33,23 @@ function App() {
     return new ethers.Contract(contractAddress, contractABI, signer);
   };
 
+  const fetchGif = async (keyword = "money") => {
+    try {
+      const res = await fetch(
+        `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${keyword}&limit=1`
+      );
+      const data = await res.json();
+      if (data.data.length > 0) {
+        setGifUrl(data.data[0].images.original.url);
+      } else {
+        setGifUrl(null);
+      }
+    } catch (err) {
+      console.error("Error fetching GIF:", err);
+      setGifUrl(null);
+    }
+  };
+
   const deposit = async () => {
     try {
       const contract = await getContract();
@@ -37,9 +57,11 @@ function App() {
       setStatus("⏳ Sending deposit...");
       await tx.wait();
       setStatus("✅ Deposited 0.01 ETH!");
+      await fetchGif("pokemon pikachu"); 
     } catch (err) {
       console.error(err);
       setStatus("❌ Deposit failed");
+      setGifUrl(null);
     }
   };
 
@@ -62,6 +84,7 @@ function App() {
       setStatus("⏳ Processing withdrawal...");
       await tx.wait();
       setStatus("✅ Withdrawal complete!");
+      await getBalance(); 
     } catch (err) {
       console.error(err);
       setStatus("❌ Withdrawal failed");
@@ -72,8 +95,8 @@ function App() {
     setWalletAddress(null);
     setBalance("0.0");
     setStatus("👋 Wallet disconnected");
+    setGifUrl(null);
   };
-  
 
   return (
     <div className="app-container">
@@ -96,6 +119,12 @@ function App() {
       )}
 
       <p className="status-message">{status}</p>
+
+      {gifUrl && (
+        <div className="gif-container">
+          <img src={gifUrl} alt="Celebration gif" style={{ width: "300px", borderRadius: "12px" }} />
+        </div>
+      )}
     </div>
   );
 }

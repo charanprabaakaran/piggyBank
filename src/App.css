@@ -89,4 +89,8 @@ h1 {
   box-sizing: border-box;
 }
 
+.gif-container {
+  margin-top: 20px;
+  text-align: center;
+}
 
